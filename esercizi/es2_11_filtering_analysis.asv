@@ -1,0 +1,97 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Script for the analysis of noise and gaussian 
+% filtering.
+%
+% Silvia Gioia Florio, matr. 119328
+% 11/04/2017 - Esercizio 2.11
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% initialize image
+img = imread('circuit.tif');
+%
+%% noise %%
+% initialize noisy images %
+% gaussian
+gaussLow = imnoise(img, 'gaussian', 0, 0.01);
+gaussHigh = imnoise(img, 'gaussian', 0, 0.1);
+% salt and pepper
+sepLow = imnoise(img, 'salt & pepper', 0.1);
+sepHigh = imnoise(img, 'salt & pepper', 0.4);
+%
+% display results %
+figure;
+% original
+subplot(3,2,1), imshow(img), title('circuit.tif');
+% gaussian noise
+subplot(3,2,3), imshow(gaussLow), title('gaussian std dev 0.01');
+subplot(3,2,4), imshow(gaussHigh), title('gaussian std dev 0.1');
+% salt & pepper noise
+subplot(3,2,5), imshow(sepLow), title('s&p noise density 0.1');
+subplot(3,2,6), imshow(sepHigh), title('s&p noise density 0.4');
+%
+%% filtering %%
+% initialize filters %
+% gaussian
+gauss = fspecial('gaussian', 3, 0.5);
+%
+% apply filters %
+% median 
+gaussHighMF = medfilt2(gaussHigh);
+gaussLowMF = medfilt2(gaussLow);
+sepHighMF = medfilt2(sepHigh);
+sepLowMF = medfilt2(sepLow);
+% gaussian 
+gaussHighGF = imfilter(gaussHigh, gauss);
+gaussLowGF = imfilter(gaussLow, gauss);
+sepHighGF = imfilter(sepHigh, gauss);
+sepLowGF = imfilter(sepLow, gauss);
+%
+% display images %
+figure;
+% gaussian noisy images
+% first column, original
+subplot(2,4,1), imshow(img), title('circuit.tif');
+subplot(2,4,5), imshow(img)
+% noisy
+subplot(2,4,2), imshow(gaussLowMF), title('gaussian low');
+subplot(2,4,6), imshow(gaussHighMF), title('gaussian high');
+% median filters
+subplot(2,4,3), imshow(gaussLow), title('median filter');
+subplot(2,4,7), imshow(gaussHigh)
+% gaussian filters
+subplot(2,4,4), imshow(gaussLowGF), title('gaussian filter');
+subplot(2,4,8), imshow(gaussHighGF), 
+%
+% salt & pepper noisy images
+figure;
+% first column, original
+subplot(2,4,1), imshow(img), title('circuit.tif');
+subplot(2,4,5), imshow(img)
+% noisy
+subplot(2,4,2), imshow(sepLowMF), title('salt & pepper low');
+subplot(2,4,6), imshow(sepHighMF), title('salt & pepper high');
+% median filters
+subplot(2,4,3), imshow(sepLow), title('median filter');
+subplot(2,4,7), imshow(sepHigh)
+% gaussian filters
+subplot(2,4,4), imshow(sepLowGF), title('gaussian filter');
+subplot(2,4,8), imshow(sepHighGF);
+%
+%% comparison %%
+% calculate mse %
+% noisy
+mseNoiseLowG = immse(img, gaussLow);
+mseNoiseHighG = immse(img, gaussHigh);
+mseNoiseLowS = immse(img, sepLow);
+mseNoiseHighS = immse(img, sepHigh);
+% gaussian filter
+mseGFLowG = immse(img, gaussLow);
+mseGFHighG = immse(img, gaussHigh);
+mseGFLowS = immse(img, sepLow);
+mseGFHighS = immse(img, sepHigh)
+% initialize variables %
+LowGaussian = [];
+HighGaussian = [];
+LowSaP = [];
+HighSaP = [];
+

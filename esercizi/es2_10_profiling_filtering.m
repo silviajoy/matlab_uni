@@ -1,0 +1,155 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Script for the analysis of noise and gaussian 
+% filtering.
+%
+% Silvia Gioia Florio, matr. 119328
+% 11/04/2017 - Esercizio 2.10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% profiling %%
+%
+% initialize image "eight.tif"
+img = imread('eight.tif');
+img = double(img)/255;
+%
+% initialize noises %
+%
+% variance 0.01 - low noise
+gaussLow = imnoise(img,'gaussian', 0, 0.01);
+% variance 0.1 - high noise
+gaussHigh = imnoise(img,'gaussian', 0, 0.1);
+%       
+% inizialize coordinates vectors %
+x = [19 300];
+y = [96 96];
+%
+% display images and profiles %
+figure;
+% original image
+subplot(3,2,1);
+imshow(img);
+title('eight.tif');
+% original image profile
+subplot(3,2,2)
+improfile(img,x,y), grid on;
+title('eight.tif profile (19,96)-(300,96)');
+% low noise image
+subplot(3,2,3);
+%gaussLow = uint8(gaussLow);
+imshow(gaussLow);
+title('low gaussian noise');
+% low noise image profile
+subplot(3,2,4)
+improfile(gaussLow,x,y), grid on;
+title('low gaussian: profile (19,96)-(300,96)');
+% high noise image profile
+subplot(3,2,5);
+%gaussHigh = uint8(gaussHigh);
+imshow(gaussHigh);
+title('high gaussian noise');
+% high noise image profile
+subplot(3,2,6)
+improfile(gaussHigh,x,y), grid on;
+title('high gaussian: profile (19,96)-(300,96)');
+%
+%% mse %%
+% calculate mse %
+mseNoiseLow = immse(img, gaussLow);
+mseNoiseHigh = immse(img, gaussHigh);
+%
+% calculate peak signal-to-noise ratio %
+psnrNoiseLow = psnr(img, gaussLow);
+psnrNoiseHigh = psnr(img, gaussHigh);
+%
+% create table %
+MSE = [mseNoiseLow;mseNoiseHigh];
+PSNR = [psnrNoiseLow;psnrNoiseHigh];
+
+table(MSE, PSNR, 'RowNames', {'NoiseLow', 'NoiseHigh'})
+%
+%% filtering %%
+% initialize filters %
+gauss01=fspecial('gaussian',3, 0.1);
+gauss05=fspecial('gaussian',3, 0.5);
+gauss1=fspecial('gaussian',3, 1);
+%
+% apply filters low noise %
+imgFG01Low= imfilter(gaussLow,gauss01);
+imgFG05Low= imfilter(gaussLow,gauss05);
+imgFG1Low= imfilter(gaussLow,gauss1);
+%
+% output low noise %
+% noisy images
+figure
+subplot(3,3,1), imshow(gaussLow)
+subplot(3,3,4), imshow(gaussLow)
+subplot(3,3,7), imshow(gaussLow)
+%filters mesh
+subplot(3,3,2), mesh(gauss01)
+subplot(3,3,5), mesh(gauss05)
+subplot(3,3,8), mesh(gauss1)
+% filtered images
+subplot(3,3,3), imshow(imgFG01Low), title('gaussian filter std deviation 0.01');
+subplot(3,3,6), imshow(imgFG05Low), title('gaussian filter std deviation 0.05');
+subplot(3,3,9), imshow(imgFG1Low), title('gaussian filter std deviation 0.1');
+%
+% apply filters high noise %
+imgFG01High= imfilter(gaussHigh,gauss01);
+imgFG05High= imfilter(gaussHigh,gauss05);
+imgFG1High= imfilter(gaussHigh,gauss1);
+%
+% output %
+figure
+% noisy images
+subplot(3,3,1), imshow(gaussHigh)
+subplot(3,3,4), imshow(gaussHigh)
+subplot(3,3,7), imshow(gaussHigh)
+%
+% filters mesh
+subplot(3,3,2), mesh(gauss01)
+subplot(3,3,5), mesh(gauss05)
+subplot(3,3,8), mesh(gauss1)
+%
+% filtered images
+subplot(3,3,3), imshow(imgFG01High), title('gaussian filter std deviation 0.01');
+subplot(3,3,6), imshow(imgFG05High), title('gaussian filter std deviation 0.05');
+subplot(3,3,9), imshow(imgFG1High), title('gaussian filter std deviation 0.1');
+%
+%% mse esteem filters %%
+%
+% calculate mse %
+mseFG01High = immse(img, imgFG01High);
+mseFG05High = immse(img, imgFG05High);
+mseFG1High = immse(img, imgFG1High);
+
+mseFG01Low = immse(img, imgFG01Low);
+mseFG05Low = immse(img, imgFG05Low);
+mseFG1Low = immse(img, imgFG1Low);
+%
+% calculate peak signal-to-noise ratio
+psnrFG01High = psnr(img, imgFG01High);
+psnrFG05High = psnr(img, imgFG05High);
+psnrFG1High = psnr(img, imgFG1High);
+
+psnrFG01Low = psnr(img, imgFG01Low);
+psnrFG05Low = psnr(img, imgFG05Low);
+psnrFG1Low = psnr(img, imgFG1Low);
+%
+% construct table %
+LowFiltereMse = [mseFG01Low; mseFG05Low; mseFG1Low];
+LowFilterPsnr = [psnrFG01Low; psnrFG05Low; psnrFG1Low];
+HighFilterMse = [mseFG01High; mseFG05High; mseFG1High];
+HighFilterPsnr = [psnrFG01High; psnrFG05High; psnrFG1High];
+
+table(LowFiltereMse, LowFilterPsnr, HighFilterMse, HighFilterPsnr, 'RowNames', {'stdv_01', 'stdv_05', 'stdv_1'})
+%
+%% mse comparison %%
+% initialize variables %
+LowNoiseMse = [MSE(1); MSE(1); MSE(1)];
+LowNoisePsnr = [PSNR(1); PSNR(1); PSNR(1)];
+
+HighNoiseMse = [MSE(2); MSE(2); MSE(2)];
+HighNoisePsnr = [PSNR(2); PSNR(2); PSNR(2)];
+%
+% display table %
+LowNoiseTable = table(LowFiltereMse, LowNoiseMse, LowFilterPsnr, LowNoisePsnr, 'RowNames', {'stdv_01', 'stdv_05', 'stdv_1'})
+HighNoiseTable = table(HighFilterMse, HighNoiseMse, HighFilterPsnr, HighNoisePsnr, 'RowNames', {'stdv_01', 'stdv_05', 'stdv_1'})
